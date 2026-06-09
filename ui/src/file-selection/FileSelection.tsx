@@ -1,8 +1,8 @@
-import { useState } from "react";
 import { SelectedFilesList } from "./SelectedFilesList";
+import { useFileSelectionStore } from "./useFileSelectionStore";
 
 export function FileSelection() {
-  const [files, setFiles] = useState<File[]>([]);
+  const { files, setFiles, removeFile } = useFileSelectionStore();
 
   function fileSelected(e: React.ChangeEvent) {
     const target = e.target as HTMLInputElement;
@@ -26,13 +26,9 @@ export function FileSelection() {
     target.value = "";
   }
 
-  function onRemove(name: string) {
-    setFiles(files.filter((file) => file.name !== name));
-  }
-
   return (
     <>
-      <SelectedFilesList files={files} onRemove={onRemove} />
+      <SelectedFilesList files={files} onRemove={removeFile} />
       <div>
         <input
           type="file"
