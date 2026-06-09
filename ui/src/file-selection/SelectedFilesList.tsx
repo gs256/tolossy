@@ -7,7 +7,14 @@ export function SelectedFilesList(props: {
   return (
     <div>
       {files.map((file, i) => (
-        <div key={i}>
+        <div
+          key={i}
+          style={{
+            display: "flex",
+            width: "280px",
+            justifyContent: "space-between",
+          }}
+        >
           <span>{file.name}</span>
           <button onClick={() => onRemove(file.name)}>x</button>
         </div>

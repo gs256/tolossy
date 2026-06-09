@@ -6,6 +6,7 @@ export function App() {
     <div>
       <h1>TODO</h1>
       <FileSelection />
+      <button>Convert to mp3</button>
     </div>
   );
 }

@@ -33,12 +33,14 @@ export function FileSelection() {
   return (
     <>
       <SelectedFilesList files={files} onRemove={onRemove} />
-      <input
-        type="file"
-        multiple
-        style={{ border: "1px solid red", padding: "30px" }}
-        onChange={fileSelected}
-      />
+      <div>
+        <input
+          type="file"
+          multiple
+          style={{ border: "1px solid red", padding: "20px" }}
+          onChange={fileSelected}
+        />
+      </div>
     </>
   );
 }
