@@ -4,6 +4,7 @@ export interface FileSelectionStore {
   files: File[];
   setFiles: (files: File[]) => void;
   removeFile: (name: string) => void;
+  clear: () => void;
 }
 
 export const useFileSelectionStore = create<FileSelectionStore>(
@@ -16,6 +17,10 @@ export const useFileSelectionStore = create<FileSelectionStore>(
 
     removeFile: (name: string) => {
       set({ files: state().files.filter((file) => file.name !== name) });
+    },
+
+    clear: () => {
+      set({ files: [] });
     },
   }),
 );
