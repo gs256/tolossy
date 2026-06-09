@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { SelectedFilesList } from "./SelectedFilesList";
 
 export function FileSelection() {
   const [files, setFiles] = useState<File[]>([]);
@@ -10,7 +11,9 @@ export function FileSelection() {
     if (addedFiles.length > 0) {
       const newFiles = [...files];
       for (const added of addedFiles) {
-        if (files.some((existing) => existing.name === added.name)) {
+        if (added.type === "") {
+          alert(`Directories are not supported`);
+        } else if (files.some((existing) => existing.name === added.name)) {
           alert(`File ${added.name} already added`);
         } else {
           newFiles.push(added);
@@ -23,13 +26,13 @@ export function FileSelection() {
     target.value = "";
   }
 
+  function onRemove(name: string) {
+    setFiles(files.filter((file) => file.name !== name));
+  }
+
   return (
     <>
-      <div>
-        {files.map((file, i) => (
-          <div key={i}>{file.name}</div>
-        ))}
-      </div>
+      <SelectedFilesList files={files} onRemove={onRemove} />
       <input
         type="file"
         multiple
