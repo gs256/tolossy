@@ -5,4 +5,12 @@ edition = "2024"
 
 [dependencies]
 axum = "0.8.9"
+rust-embed = "8.11.0"
 tokio = { version = "1.52.3", features = ["rt-multi-thread"] }
+
+[profile.release]
+strip = true
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
