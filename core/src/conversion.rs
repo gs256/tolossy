@@ -1,4 +1,8 @@
-use std::{path::Path, process::Command};
+use std::{
+    fs,
+    path::{Path, PathBuf},
+    process::Command,
+};
 
 pub fn is_ffmpeg_available() -> bool {
     let result = Command::new("ffmpeg").arg("--help").output();
@@ -29,6 +33,12 @@ pub fn convert_file(path: &str, out_dir: &str) -> Result<String, String> {
         }
         None => Err("ffmpeg process terminated by signal".to_string()),
     };
+}
+
+pub fn get_temp_dir() -> PathBuf {
+    let path = std::env::temp_dir().join("tolossy");
+    fs::create_dir_all(&path).expect("failed to create temp subdirectory");
+    path
 }
 
 #[cfg(test)]

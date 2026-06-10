@@ -1,15 +1,17 @@
 pub mod conversion;
-use std::ffi::OsStr;
+use std::{collections::HashMap, ffi::OsStr};
 
 use axum::{
-    Router,
-    body::Body,
-    extract::Path,
+    Json, Router,
+    body::{Body, Bytes},
+    extract::{Path, Query},
     http::{HeaderValue, Response, StatusCode},
     response::IntoResponse,
-    routing::get,
+    routing::{get, post},
 };
 use rust_embed::Embed;
+
+use crate::conversion::get_temp_dir;
 
 const HOST: &str = "127.0.0.1:2479";
 
@@ -60,9 +62,20 @@ fn get_file(path: &str) -> Option<Response<Body>> {
     }
 }
 
+async fn upload(Query(params): Query<HashMap<String, String>>, body: Bytes) -> impl IntoResponse {
+    let filename = params.get("name").map(|s| s.as_str()).unwrap_or_default();
+    if filename.is_empty() {
+        return (StatusCode::BAD_REQUEST, "empty filename").into_response();
+    }
+    let temp_filepath = get_temp_dir().join(filename);
+    std::fs::write(temp_filepath, &body).unwrap();
+    return "done".into_response();
+}
+
 fn create_app() -> Router {
     Router::new()
         .route("/", get(index))
+        .route("/api/upload", post(upload))
         .route("/{*path}", get(get_asset))
 }
 
@@ -82,4 +95,43 @@ async fn main() {
     axum::serve(listener, app)
         .await
         .expect("failed to start server");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use axum::extract::Request;
+    use std::fs;
+    use tower::ServiceExt;
+
+    mod upload {
+        use super::*;
+
+        #[tokio::test]
+        async fn upload_success() {
+            let request = Request::builder()
+                .method("POST")
+                .uri("/api/upload?name=test")
+                .header("content-type", "application/octet-stream")
+                .body(Body::from(fs::read("local/sample.flac").unwrap()))
+                .unwrap();
+
+            let response = create_app().oneshot(request).await.unwrap();
+            assert_eq!(response.status(), StatusCode::OK);
+            assert!(get_temp_dir().join("test").exists())
+        }
+
+        #[tokio::test]
+        async fn upload_no_name() {
+            let request = Request::builder()
+                .method("POST")
+                .uri("/api/upload")
+                .header("content-type", "application/octet-stream")
+                .body(Body::empty())
+                .unwrap();
+
+            let response = create_app().oneshot(request).await.unwrap();
+            assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+        }
+    }
 }
