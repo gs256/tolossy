@@ -4,6 +4,8 @@ use std::{
     process::Command,
 };
 
+use dirs::desktop_dir;
+
 pub fn is_ffmpeg_available() -> bool {
     let result = Command::new("ffmpeg").arg("--help").output();
     result.is_ok()
@@ -38,6 +40,12 @@ pub fn convert_file(path: &str, out_dir: &str) -> Result<String, String> {
 pub fn get_temp_dir() -> PathBuf {
     let path = std::env::temp_dir().join("tolossy");
     fs::create_dir_all(&path).expect("failed to create temp subdirectory");
+    path
+}
+
+pub fn get_default_output_dir() -> PathBuf {
+    let path = desktop_dir().expect("no desktop").join("tolossy");
+    fs::create_dir_all(&path).expect("failed to create desktop subdirectory");
     path
 }
 

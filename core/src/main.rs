@@ -1,8 +1,9 @@
 pub mod conversion;
+pub mod utils;
 use std::{collections::HashMap, ffi::OsStr};
 
 use axum::{
-    Json, Router,
+    Router,
     body::{Body, Bytes},
     extract::{Path, Query},
     http::{HeaderValue, Response, StatusCode},
@@ -11,7 +12,7 @@ use axum::{
 };
 use rust_embed::Embed;
 
-use crate::conversion::get_temp_dir;
+use crate::conversion::{convert_file, get_default_output_dir, get_temp_dir};
 
 const HOST: &str = "127.0.0.1:2479";
 
@@ -72,10 +73,34 @@ async fn upload(Query(params): Query<HashMap<String, String>>, body: Bytes) -> i
     return "done".into_response();
 }
 
+async fn convert(Query(params): Query<HashMap<String, String>>) -> impl IntoResponse {
+    let filename = params.get("name").map(|s| s.as_str()).unwrap_or_default();
+    if filename.is_empty() {
+        return (StatusCode::BAD_REQUEST, "empty filename").into_response();
+    }
+    let temp_filepath = get_temp_dir().join(filename);
+    if !temp_filepath.exists() {
+        return (StatusCode::BAD_REQUEST, "file does not exist").into_response();
+    }
+    let result = convert_file(
+        temp_filepath.to_str().unwrap(),
+        get_default_output_dir().to_str().unwrap(),
+    );
+    match result {
+        Ok(output) => {
+            return (StatusCode::OK, output).into_response();
+        }
+        Err(output) => {
+            return (StatusCode::INTERNAL_SERVER_ERROR, output).into_response();
+        }
+    };
+}
+
 fn create_app() -> Router {
     Router::new()
         .route("/", get(index))
         .route("/api/upload", post(upload))
+        .route("/api/convert", get(convert))
         .route("/{*path}", get(get_asset))
 }
 
@@ -100,7 +125,7 @@ async fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use axum::extract::Request;
+    use axum::{body::Body, http::Request};
     use std::fs;
     use tower::ServiceExt;
 
@@ -130,6 +155,43 @@ mod tests {
                 .body(Body::empty())
                 .unwrap();
 
+            let response = create_app().oneshot(request).await.unwrap();
+            assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+        }
+    }
+
+    mod upload_and_convert {
+        use super::*;
+
+        #[tokio::test]
+        async fn success() {
+            {
+                let request = Request::builder()
+                    .method("POST")
+                    .uri("/api/upload?name=sample.flac")
+                    .header("content-type", "application/octet-stream")
+                    .body(Body::from(fs::read("local/sample.flac").unwrap()))
+                    .unwrap();
+                create_app().oneshot(request).await.unwrap();
+            }
+            {
+                let request = Request::builder()
+                    .method("GET")
+                    .uri("/api/convert?name=sample.flac")
+                    .body(Body::empty())
+                    .unwrap();
+                let response = create_app().oneshot(request).await.unwrap();
+                assert_eq!(response.status(), StatusCode::OK);
+            }
+        }
+
+        #[tokio::test]
+        async fn non_existent_file() {
+            let request = Request::builder()
+                .method("GET")
+                .uri("/api/convert?name=non_existent.flac")
+                .body(Body::empty())
+                .unwrap();
             let response = create_app().oneshot(request).await.unwrap();
             assert_eq!(response.status(), StatusCode::BAD_REQUEST);
         }
