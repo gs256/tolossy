@@ -1,10 +1,12 @@
+import { CORE_URL } from "./const";
+
 export interface ConvertResponse {
   success: boolean;
   message: string;
 }
 
 export class CoreApi {
-  public readonly url = "http://localhost:2479";
+  private readonly url = CORE_URL;
 
   async convert(file: File): Promise<ConvertResponse> {
     try {

@@ -7,8 +7,10 @@ import { useProcessingStore } from "./processing-list/useProcessingStore";
 import type { AppState } from "./common/types";
 import { useRef } from "react";
 import { CoreApi } from "./common/core-api";
+import { useCoreWs } from "./common/useCoreWs";
 
 export function App() {
+  const { status: connectionStatus } = useCoreWs();
   const { files, clear: clearFileSelection } = useFileSelectionStore();
   const {
     enqueue,
@@ -46,11 +48,18 @@ export function App() {
     api.current.openOutputDir();
   }
 
+  if (connectionStatus === "pending") {
+    return <div>loading...</div>;
+  } else if (connectionStatus === "disconnected") {
+    return <div>disconnected. make sure the app is runing</div>;
+  }
+
   return (
     <div>
       <h1>TODO</h1>
       <div>
         <p>Status</p>
+        <p>Socket: {connectionStatus ? "yes" : "no"}</p>
         {!isPending && (
           <p>ffmpeg: {appState?.ffmpegAvailable ? "yes" : "no"}</p>
         )}

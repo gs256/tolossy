@@ -4,10 +4,10 @@ use crate::conversion::{convert_file, get_default_output_dir, get_temp_dir, is_f
 use axum::{
     Json, Router,
     body::{Body, Bytes},
-    extract::{DefaultBodyLimit, Path, Query},
+    extract::{DefaultBodyLimit, Path, Query, WebSocketUpgrade, ws::WebSocket},
     http::{HeaderValue, Response, StatusCode},
     response::IntoResponse,
-    routing::{get, post},
+    routing::{any, get, post},
 };
 use rust_embed::Embed;
 use serde_json::json;
@@ -111,6 +111,15 @@ async fn open_output_dir() -> impl IntoResponse {
     }
 }
 
+async fn ws_handler(ws: WebSocketUpgrade) -> impl IntoResponse {
+    ws.on_upgrade(handle_socket)
+}
+async fn handle_socket(mut socket: WebSocket) {
+    println!("socket connected");
+    while socket.recv().await.is_some() {}
+    println!("socket disconnected");
+}
+
 fn create_app() -> Router {
     let cors = CorsLayer::new()
         .allow_origin(Any)
@@ -123,6 +132,7 @@ fn create_app() -> Router {
         .route("/api/upload", post(upload))
         .route("/api/convert", get(convert))
         .route("/api/open-output-dir", get(open_output_dir))
+        .route("/ws", any(ws_handler))
         .route("/{*path}", get(get_asset))
         .layer(cors)
         .layer(DefaultBodyLimit::max(1 * 1024 * 1024 * 1024)) // 1GB
