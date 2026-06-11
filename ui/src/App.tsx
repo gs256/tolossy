@@ -51,7 +51,9 @@ export function App() {
       <h1>TODO</h1>
       <div>
         <p>Status</p>
-        {!isPending && <p>ffmpeg: {appState.ffmpegAvailable ? "yes" : "no"}</p>}
+        {!isPending && (
+          <p>ffmpeg: {appState?.ffmpegAvailable ? "yes" : "no"}</p>
+        )}
       </div>
       {!hasProcessingFiles ? <FileSelection /> : <ProcessingList />}
       {!hasProcessingFiles ? (

@@ -5,7 +5,7 @@ use axum::{
     Json, Router,
     body::{Body, Bytes},
     extract::{DefaultBodyLimit, Path, Query},
-    http::{HeaderValue, Method, Response, StatusCode},
+    http::{HeaderValue, Response, StatusCode},
     response::IntoResponse,
     routing::{get, post},
 };
@@ -138,7 +138,9 @@ async fn main() {
         .await
         .expect("failed to bind tcp listener");
 
-    println!("Server running http://{HOST}");
+    let local_addr = format!("http://{}", listener.local_addr().unwrap());
+    println!("Server running {local_addr}");
+    _ = open::that_detached(local_addr.to_string());
 
     axum::serve(listener, app)
         .await
