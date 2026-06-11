@@ -11,7 +11,7 @@ use axum::{
 };
 use rust_embed::Embed;
 use serde_json::json;
-use std::{collections::HashMap, ffi::OsStr};
+use std::{collections::HashMap, env, ffi::OsStr, process};
 use tower_http::cors::{Any, CorsLayer};
 
 const HOST: &str = "127.0.0.1:2479";
@@ -133,14 +133,20 @@ struct Asset;
 
 #[tokio::main]
 async fn main() {
+    let is_debug = env::var("DEBUG").unwrap_or_default() == "true";
     let app = create_app();
+
     let listener = tokio::net::TcpListener::bind(HOST)
         .await
         .expect("failed to bind tcp listener");
 
     let local_addr = format!("http://{}", listener.local_addr().unwrap());
+
     println!("Server running {local_addr}");
-    _ = open::that_detached(local_addr.to_string());
+
+    if !is_debug {
+        _ = open::that_detached(local_addr.to_string());
+    }
 
     axum::serve(listener, app)
         .await
