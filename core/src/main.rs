@@ -11,7 +11,7 @@ use axum::{
 };
 use rust_embed::Embed;
 use serde_json::json;
-use std::{collections::HashMap, env, ffi::OsStr, process};
+use std::{collections::HashMap, env, ffi::OsStr};
 use tower_http::cors::{Any, CorsLayer};
 
 const HOST: &str = "127.0.0.1:2479";
@@ -41,6 +41,7 @@ fn infer_content_type(path: &str) -> String {
                 "html" => return "text/html".to_string(),
                 "js" => return "text/javascript".to_string(),
                 "css" => return "text/css".to_string(),
+                "svg" => return "image/svg+xml".to_string(),
                 _ => "text/plain".to_string(),
             };
         }
@@ -142,6 +143,7 @@ async fn main() {
 
     let local_addr = format!("http://{}", listener.local_addr().unwrap());
 
+    println!("DEBUG: {is_debug}");
     println!("Server running {local_addr}");
 
     if !is_debug {
