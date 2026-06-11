@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 axum = "0.8.9"
 dirs = "6.0.0"
+open = "5.3.5"
 rust-embed = "8.11.0"
 serde_json = "1.0.150"
 tokio = { version = "1.52.3", features = ["rt-multi-thread"] }

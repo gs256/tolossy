@@ -5,6 +5,8 @@ import { useFileSelectionStore } from "./file-selection/useFileSelectionStore";
 import { ProcessingList } from "./processing-list/ProcessingList";
 import { useProcessingStore } from "./processing-list/useProcessingStore";
 import type { AppState } from "./common/types";
+import { useRef } from "react";
+import { CoreApi } from "./common/core-api";
 
 export function App() {
   const { files, clear: clearFileSelection } = useFileSelectionStore();
@@ -14,6 +16,7 @@ export function App() {
     items: processingItems,
     clear: clearProcessing,
   } = useProcessingStore();
+  const api = useRef(new CoreApi());
 
   const { data: appState, isPending } = useQuery({
     queryKey: ["ffmpeg-available"],
@@ -39,6 +42,10 @@ export function App() {
     clearProcessing();
   }
 
+  function showOutput() {
+    api.current.openOutputDir();
+  }
+
   return (
     <div>
       <h1>TODO</h1>
@@ -50,7 +57,10 @@ export function App() {
       {!hasProcessingFiles ? (
         <button onClick={startConversion}>Convert to mp3</button>
       ) : (
-        <button onClick={startOver}>Start over</button>
+        <>
+          <button onClick={startOver}>Start over</button>
+          <button onClick={showOutput}>Show output</button>
+        </>
       )}
     </div>
   );

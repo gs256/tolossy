@@ -26,6 +26,10 @@ export class CoreApi {
     }
   }
 
+  async openOutputDir() {
+    return await fetch(`${this.url}/api/open-output-dir`);
+  }
+
   private async upload(file: File) {
     return await fetch(`${this.url}/api/upload?name=${file.name}`, {
       method: "POST",

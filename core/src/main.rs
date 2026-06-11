@@ -103,6 +103,13 @@ async fn get_state() -> impl IntoResponse {
     }))
 }
 
+async fn open_output_dir() -> impl IntoResponse {
+    match open::that(get_default_output_dir()) {
+        Ok(_) => (StatusCode::OK, "").into_response(),
+        Err(err) => (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()).into_response(),
+    }
+}
+
 fn create_app() -> Router {
     let cors = CorsLayer::new()
         .allow_origin(Any)
@@ -114,6 +121,7 @@ fn create_app() -> Router {
         .route("/api/state", get(get_state))
         .route("/api/upload", post(upload))
         .route("/api/convert", get(convert))
+        .route("/api/open-output-dir", get(open_output_dir))
         .route("/{*path}", get(get_asset))
         .layer(cors)
         .layer(DefaultBodyLimit::max(1 * 1024 * 1024 * 1024)) // 1GB
@@ -159,6 +167,18 @@ mod tests {
         let str = response_body_str(response.into_body()).await;
         let json: Value = serde_json::from_slice(str.as_bytes()).unwrap();
         assert_eq!(json["ffmpegAvailable"], true)
+    }
+
+    #[tokio::test]
+    #[ignore]
+    async fn open_output_dir() {
+        let request = Request::builder()
+            .method("GET")
+            .uri("/api/open-output-dir")
+            .body(Body::empty())
+            .unwrap();
+
+        create_app().oneshot(request).await.unwrap();
     }
 
     mod upload {
