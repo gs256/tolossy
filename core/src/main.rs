@@ -1,18 +1,18 @@
 pub mod conversion;
 pub mod utils;
-use std::{collections::HashMap, ffi::OsStr};
-
+use crate::conversion::{convert_file, get_default_output_dir, get_temp_dir, is_ffmpeg_available};
 use axum::{
-    Router,
+    Json, Router,
     body::{Body, Bytes},
-    extract::{Path, Query},
-    http::{HeaderValue, Response, StatusCode},
+    extract::{DefaultBodyLimit, Path, Query},
+    http::{HeaderValue, Method, Response, StatusCode},
     response::IntoResponse,
     routing::{get, post},
 };
 use rust_embed::Embed;
-
-use crate::conversion::{convert_file, get_default_output_dir, get_temp_dir};
+use serde_json::json;
+use std::{collections::HashMap, ffi::OsStr};
+use tower_http::cors::{Any, CorsLayer};
 
 const HOST: &str = "127.0.0.1:2479";
 
@@ -96,12 +96,27 @@ async fn convert(Query(params): Query<HashMap<String, String>>) -> impl IntoResp
     };
 }
 
+async fn get_state() -> impl IntoResponse {
+    let ffmpeg_available = is_ffmpeg_available();
+    Json(json!({
+        "ffmpegAvailable": ffmpeg_available,
+    }))
+}
+
 fn create_app() -> Router {
+    let cors = CorsLayer::new()
+        .allow_origin(Any)
+        .allow_methods(Any)
+        .allow_headers(Any);
+
     Router::new()
         .route("/", get(index))
+        .route("/api/state", get(get_state))
         .route("/api/upload", post(upload))
         .route("/api/convert", get(convert))
         .route("/{*path}", get(get_asset))
+        .layer(cors)
+        .layer(DefaultBodyLimit::max(1 * 1024 * 1024 * 1024)) // 1GB
 }
 
 #[derive(Embed)]
@@ -124,10 +139,27 @@ async fn main() {
 
 #[cfg(test)]
 mod tests {
+    use crate::utils::response_body_str;
+
     use super::*;
     use axum::{body::Body, http::Request};
+    use serde_json::Value;
     use std::fs;
     use tower::ServiceExt;
+
+    #[tokio::test]
+    async fn get_state() {
+        let request = Request::builder()
+            .method("GET")
+            .uri("/api/state")
+            .body(Body::empty())
+            .unwrap();
+
+        let response = create_app().oneshot(request).await.unwrap();
+        let str = response_body_str(response.into_body()).await;
+        let json: Value = serde_json::from_slice(str.as_bytes()).unwrap();
+        assert_eq!(json["ffmpegAvailable"], true)
+    }
 
     mod upload {
         use super::*;
