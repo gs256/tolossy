@@ -21,7 +21,15 @@ pub fn convert_file(path: &str, out_dir: &str) -> Result<String, String> {
         .to_owned();
 
     let result = Command::new("ffmpeg")
-        .args(["-i", path, "-q:a", "0", &out_file_path, "-y"])
+        .args([
+            "-hide_banner",
+            "-i",
+            path,
+            "-q:a",
+            "0",
+            &out_file_path,
+            "-y",
+        ])
         .output()
         .unwrap();
 
