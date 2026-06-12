@@ -48,10 +48,24 @@ export function App() {
     api.current.openOutputDir();
   }
 
+  function refresh() {
+    window.location.reload();
+  }
+
+  function exit() {
+    window.close();
+  }
+
   if (connectionStatus === "pending") {
     return <div>loading...</div>;
   } else if (connectionStatus === "disconnected") {
-    return <div>disconnected. make sure the app is runing</div>;
+    return (
+      <div>
+        <div>disconnected. try refreshing the page</div>
+        <button onClick={refresh}>Refresh page</button>
+        <button onClick={exit}>Exit</button>
+      </div>
+    );
   }
 
   return (
