@@ -5,7 +5,7 @@ import { ErrorModal } from "../error-modal/ErrorModal";
 export function ProcessingList() {
   const { items } = useProcessingStore();
   const [open, setOpen] = useState(false);
-  const [item, setItem] = useState<ProcessingItem>(null);
+  const [item, setItem] = useState<ProcessingItem | null>(null);
 
   function showLogs(item: ProcessingItem) {
     setItem(item);

@@ -10,10 +10,12 @@ export function ErrorModal(props: {
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
-    if (open && !dialogRef.current.open) {
-      dialogRef.current.show();
-    } else if (!open && dialogRef.current.open) {
-      dialogRef.current.close();
+    if (dialogRef.current) {
+      if (open && !dialogRef.current.open) {
+        dialogRef.current?.show();
+      } else if (!open && dialogRef.current.open) {
+        dialogRef.current?.close();
+      }
     }
   }, [open]);
 
