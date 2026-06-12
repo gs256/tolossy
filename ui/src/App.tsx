@@ -5,10 +5,20 @@ import { useFileSelectionStore } from "./file-selection/useFileSelectionStore";
 import { ProcessingList } from "./processing-list/ProcessingList";
 import { useProcessingStore } from "./processing-list/useProcessingStore";
 import type { AppState } from "./common/types";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { CoreApi } from "./common/core-api";
 import { useCoreWs } from "./common/useCoreWs";
 import { CORE_URL } from "./common/const";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "./components/ui/card";
 
 export function App() {
   const { status: connectionStatus } = useCoreWs();
@@ -76,25 +86,47 @@ export function App() {
   }
 
   return (
-    <div>
-      <h1>TODO</h1>
-      <div>
-        <p>Status</p>
-        <p>Socket: {connectionStatus ? "yes" : "no"}</p>
-        {!isPending && (
-          <p>ffmpeg: {appState?.ffmpegAvailable ? "yes" : "no"}</p>
-        )}
-      </div>
-      {!hasProcessingFiles ? <FileSelection /> : <ProcessingList />}
+    <div className="h-screen flex flex-col items-center justify-center">
+      {/*{!hasProcessingFiles ? <FileSelection /> : <ProcessingList />}
       {!hasProcessingFiles ? (
-        <button onClick={startConversion}>Convert to mp3</button>
+        <Button onClick={startConversion}>Convert to mp3</Button>
       ) : (
         <>
           {hasFailed && <button onClick={retryFailed}>Retry failed</button>}
           <button onClick={startOver}>Back</button>
           <button onClick={showOutput}>Show output</button>
         </>
-      )}
+      )}*/}
+      <Card className="min-w-lg">
+        <CardHeader>
+          <CardTitle>tolossy</CardTitle>
+          <CardDescription>
+            <p>Convert anything to mp3</p>
+            <p>Socket: {connectionStatus ? "yes" : "no"}</p>
+            {!isPending && (
+              <p>ffmpeg: {appState?.ffmpegAvailable ? "yes" : "no"}</p>
+            )}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {!hasProcessingFiles ? <FileSelection /> : <ProcessingList />}
+        </CardContent>
+        <CardFooter>
+          {!hasProcessingFiles ? (
+            <Button onClick={startConversion}>Convert to mp3</Button>
+          ) : (
+            <>
+              {hasFailed && <Button onClick={retryFailed}>Retry failed</Button>}
+              <Button onClick={startOver} variant="outline">
+                Back
+              </Button>
+              <Button onClick={showOutput} variant="secondary">
+                Show output
+              </Button>
+            </>
+          )}
+        </CardFooter>
+      </Card>
     </div>
   );
 }
