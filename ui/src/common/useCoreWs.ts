@@ -11,12 +11,10 @@ export function useCoreWs() {
     const ws = new WebSocket(CORE_URL + "/ws");
     websocket.current = ws;
 
-    ws.onopen = (e: Event) => {
-      console.log("open connection", e);
+    ws.onopen = () => {
       setStatus("connected");
     };
     ws.onclose = () => {
-      console.log("close connection");
       setStatus("disconnected");
     };
 

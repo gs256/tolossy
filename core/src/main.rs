@@ -44,6 +44,7 @@ fn infer_content_type(path: &str) -> String {
                 "js" => return "text/javascript".to_string(),
                 "css" => return "text/css".to_string(),
                 "svg" => return "image/svg+xml".to_string(),
+                "woff2" => return "font/woff2".to_string(),
                 _ => "text/plain".to_string(),
             };
         }
@@ -51,16 +52,40 @@ fn infer_content_type(path: &str) -> String {
     "text/plain".to_string()
 }
 
+fn is_binary(path: &str) -> bool {
+    let extension = std::path::Path::new(path)
+        .extension()
+        .and_then(OsStr::to_str);
+    if let Some(test) = extension {
+        match test {
+            "woff2" => return true,
+            "woff" => return true,
+            "ttf" => return true,
+            "otf" => return true,
+            "png" => return true,
+            "jpg" => return true,
+            "jpeg" => return true,
+            _ => return false,
+        };
+    }
+    return false;
+}
+
 fn get_file(path: &str) -> Option<Response<Body>> {
     match Asset::get(path) {
         Some(file) => {
-            let content = String::from_utf8(file.data.into_owned()).expect("failed to read asset");
-            let mut test = content.into_response();
-            test.headers_mut().insert(
+            let mut response = if is_binary(path) {
+                file.data.into_owned().into_response()
+            } else {
+                String::from_utf8(file.data.into_owned())
+                    .expect("failed to read asset")
+                    .into_response()
+            };
+            response.headers_mut().insert(
                 "content-type",
                 HeaderValue::from_str(&infer_content_type(path)).unwrap(),
             );
-            Some(test)
+            Some(response)
         }
         None => None,
     }
