@@ -5,7 +5,7 @@ import { useFileSelectionStore } from "./file-selection/useFileSelectionStore";
 import { ProcessingList } from "./processing-list/ProcessingList";
 import { useProcessingStore } from "./processing-list/useProcessingStore";
 import type { AppState } from "./common/types";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { CoreApi } from "./common/core-api";
 import { useCoreWs } from "./common/useCoreWs";
 import { CORE_URL } from "./common/const";
@@ -44,6 +44,7 @@ export function App() {
 
   function startOver() {
     clearProcessing();
+    api.current.cleanup();
   }
 
   function retryFailed() {

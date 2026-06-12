@@ -8,7 +8,7 @@ export interface ConvertResponse {
 export class CoreApi {
   private readonly url = CORE_URL;
 
-  async convert(file: File): Promise<ConvertResponse> {
+  public async convert(file: File): Promise<ConvertResponse> {
     try {
       {
         const response = await this.upload(file);
@@ -28,8 +28,12 @@ export class CoreApi {
     }
   }
 
-  async openOutputDir() {
+  public async openOutputDir() {
     return await fetch(`${this.url}/api/open-output-dir`);
+  }
+
+  public async cleanup() {
+    return await fetch(`${this.url}/api/cleanup`, { keepalive: true });
   }
 
   private async upload(file: File) {

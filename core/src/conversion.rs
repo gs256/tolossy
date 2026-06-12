@@ -1,5 +1,5 @@
 use std::{
-    fs,
+    fs::{self, remove_dir_all},
     path::{Path, PathBuf},
     process::Command,
 };
@@ -49,6 +49,13 @@ pub fn get_temp_dir() -> PathBuf {
     let path = std::env::temp_dir().join("tolossy");
     fs::create_dir_all(&path).expect("failed to create temp subdirectory");
     path
+}
+
+pub fn clear_temp_dir() {
+    let path = get_temp_dir();
+    if path.try_exists().unwrap() {
+        remove_dir_all(path).unwrap()
+    }
 }
 
 pub fn get_default_output_dir() -> PathBuf {

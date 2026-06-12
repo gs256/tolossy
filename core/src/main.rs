@@ -1,6 +1,8 @@
 pub mod conversion;
 pub mod utils;
-use crate::conversion::{convert_file, get_default_output_dir, get_temp_dir, is_ffmpeg_available};
+use crate::conversion::{
+    clear_temp_dir, convert_file, get_default_output_dir, get_temp_dir, is_ffmpeg_available,
+};
 use axum::{
     Json, Router,
     body::{Body, Bytes},
@@ -111,6 +113,10 @@ async fn open_output_dir() -> impl IntoResponse {
     }
 }
 
+async fn cleanup() -> impl IntoResponse {
+    clear_temp_dir();
+}
+
 async fn ws_handler(ws: WebSocketUpgrade) -> impl IntoResponse {
     ws.on_upgrade(handle_socket)
 }
@@ -118,6 +124,7 @@ async fn handle_socket(mut socket: WebSocket) {
     println!("socket connected");
     while socket.recv().await.is_some() {}
     println!("socket disconnected");
+    clear_temp_dir();
 }
 
 fn create_app() -> Router {
@@ -132,6 +139,7 @@ fn create_app() -> Router {
         .route("/api/upload", post(upload))
         .route("/api/convert", get(convert))
         .route("/api/open-output-dir", get(open_output_dir))
+        .route("/api/cleanup", get(cleanup))
         .route("/ws", any(ws_handler))
         .route("/{*path}", get(get_asset))
         .layer(cors)
@@ -174,6 +182,18 @@ mod tests {
     use serde_json::Value;
     use std::fs;
     use tower::ServiceExt;
+
+    #[tokio::test]
+    async fn cleanup() {
+        let request = Request::builder()
+            .method("GET")
+            .uri("/api/cleanup")
+            .body(Body::empty())
+            .unwrap();
+
+        let response = create_app().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK)
+    }
 
     #[tokio::test]
     async fn get_state() {
