@@ -1,5 +1,12 @@
 import { useEffect, useRef } from "react";
 import type { ProcessingItem } from "../processing-list/useProcessingStore";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export function ErrorModal(props: {
   open: boolean;
@@ -19,19 +26,19 @@ export function ErrorModal(props: {
     }
   }, [open]);
 
-  function closeErrorModal() {
-    setOpen(false);
-  }
-
   return (
-    <dialog ref={dialogRef} style={{ maxWidth: "90vw" }}>
-      <div>
-        <h1>{item.name}</h1>
-        <pre>
-          <code style={{ textWrap: "wrap" }}>{item.logs}</code>
-        </pre>
-        <button onClick={closeErrorModal}>Close</button>
-      </div>
-    </dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="min-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Conversion logs</DialogTitle>
+          <DialogDescription>{item.name}</DialogDescription>
+        </DialogHeader>
+        <div className="-mx-4 scrollbar-thin scrollbar-thumb-accent max-h-[50vh] overflow-y-auto px-4">
+          <pre>
+            <code style={{ textWrap: "wrap" }}>{item.logs}</code>
+          </pre>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
