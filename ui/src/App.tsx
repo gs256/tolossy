@@ -99,11 +99,15 @@ export function App() {
         </CardHeader>
         <CardContent>
           {!hasProcessingFiles ? <FileSelection /> : <ProcessingList />}
-          <p className="pt-3">Output directory: /path/TODO</p>
+          <p className="pt-3 text-muted-foreground text-sm">
+            Output directory: /path/TODO
+          </p>
         </CardContent>
         <CardFooter className="gap-2">
           {!hasProcessingFiles ? (
-            <Button onClick={startConversion}>Convert to mp3</Button>
+            <Button onClick={startConversion} disabled={!hasSelectedFiles}>
+              Convert to mp3
+            </Button>
           ) : (
             <>
               {hasFailed && <Button onClick={retryFailed}>Retry failed</Button>}

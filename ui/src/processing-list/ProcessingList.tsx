@@ -9,16 +9,11 @@ import {
   ItemMedia,
   ItemTitle,
 } from "@/components/ui/item";
-import {
-  Check,
-  ChevronRightIcon,
-  CircleX,
-  Clock4,
-  LoaderCircle,
-} from "lucide-react";
+import { Check, ChevronRightIcon, CircleX, Clock4 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { Spinner } from "@/components/ui/spinner";
 
 export function ProcessingList() {
   const { items } = useProcessingStore();
@@ -41,7 +36,7 @@ export function ProcessingList() {
           <Item variant="outline" key={item.name}>
             <ItemMedia variant="icon">
               {item.status === "waiting" && <Clock4 />}
-              {item.status === "processing" && <LoaderCircle />}
+              {item.status === "processing" && <Spinner />}
               {item.status === "done" && <Check className="text-green-400" />}
               {item.status === "error" && <CircleX className="text-red-400" />}
             </ItemMedia>
