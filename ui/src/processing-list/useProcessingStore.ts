@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { CoreApi } from "../common/core-api";
 
 export type ProcessingItemStatus = "processing" | "error" | "done" | "waiting";
+export type ProcessingFilter = "all" | "failed";
 
 export interface ProcessingItem {
   file: File;
@@ -14,7 +15,7 @@ export interface ProcessingStore {
   items: ProcessingItem[];
   enqueue: (files: File[]) => void;
   clear: () => void;
-  process: () => Promise<void>;
+  process: (filter: ProcessingFilter) => Promise<void>;
 }
 
 const api = new CoreApi();
@@ -37,7 +38,7 @@ export const useProcessingStore = create<ProcessingStore>((set, state) => ({
     set({ items: [] });
   },
 
-  process: async () => {
+  process: async (filter: ProcessingFilter) => {
     const updateItem = (name: string, changes: Partial<ProcessingItem>) => {
       set({
         items: state().items.map((item) => {
@@ -46,7 +47,11 @@ export const useProcessingStore = create<ProcessingStore>((set, state) => ({
       });
     };
 
-    const items = state().items;
+    const items =
+      filter === "failed"
+        ? state().items.filter((item) => item.status === "error")
+        : state().items;
+
     for (const item of items) {
       updateItem(item.name, { status: "processing" });
       const result = await api.convert(item.file);

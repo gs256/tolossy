@@ -8,6 +8,7 @@ import type { AppState } from "./common/types";
 import { useRef } from "react";
 import { CoreApi } from "./common/core-api";
 import { useCoreWs } from "./common/useCoreWs";
+import { CORE_URL } from "./common/const";
 
 export function App() {
   const { status: connectionStatus } = useCoreWs();
@@ -23,13 +24,14 @@ export function App() {
   const { data: appState, isPending } = useQuery({
     queryKey: ["ffmpeg-available"],
     queryFn: async (): Promise<AppState> => {
-      const response = await fetch("http://localhost:2479/api/state");
+      const response = await fetch(`${CORE_URL}/api/state`);
       return response.json();
     },
   });
 
   const hasSelectedFiles = files.length > 0;
   const hasProcessingFiles = processingItems.length > 0;
+  const hasFailed = processingItems.some((item) => item.status === "error");
 
   function startConversion() {
     if (!hasSelectedFiles) {
@@ -37,11 +39,15 @@ export function App() {
     }
     clearFileSelection();
     enqueue(files);
-    process();
+    process("all");
   }
 
   function startOver() {
     clearProcessing();
+  }
+
+  function retryFailed() {
+    process("failed");
   }
 
   function showOutput() {
@@ -83,7 +89,8 @@ export function App() {
         <button onClick={startConversion}>Convert to mp3</button>
       ) : (
         <>
-          <button onClick={startOver}>Start over</button>
+          {hasFailed && <button onClick={retryFailed}>Retry failed</button>}
+          <button onClick={startOver}>Back</button>
           <button onClick={showOutput}>Show output</button>
         </>
       )}
