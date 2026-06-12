@@ -77,16 +77,10 @@ export function App() {
 
   return (
     <div className="h-screen flex flex-col items-center justify-center">
-      <Card className="min-w-lg">
+      <Card className="min-w-md">
         <CardHeader>
           <CardTitle>tolossy</CardTitle>
-          <CardDescription>
-            <p>Convert anything to mp3</p>
-            <p>Socket: {connectionStatus ? "yes" : "no"}</p>
-            {!isPending && (
-              <p>ffmpeg: {appState?.ffmpegAvailable ? "yes" : "no"}</p>
-            )}
-          </CardDescription>
+          <CardDescription>Convert any audio file to .mp3</CardDescription>
         </CardHeader>
         <CardContent>
           {!hasProcessingFiles ? <FileSelection /> : <ProcessingList />}
