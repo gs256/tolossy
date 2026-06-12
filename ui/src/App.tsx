@@ -67,7 +67,7 @@ export function App() {
     api.current.openOutputDir();
   }
 
-  if (connectionStatus === "pending" || !appState) {
+  if (connectionStatus === "pending" || !appState || isPending) {
     return <LoadingScreen />;
   } else if (!appState.ffmpegAvailable) {
     return <SetupNeededScreen />;

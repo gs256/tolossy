@@ -6,14 +6,21 @@ use crate::conversion::{
 use axum::{
     Json, Router,
     body::{Body, Bytes},
-    extract::{DefaultBodyLimit, Path, Query, WebSocketUpgrade, ws::WebSocket},
+    extract::{DefaultBodyLimit, Path, Query, State, WebSocketUpgrade, ws::WebSocket},
     http::{HeaderValue, Response, StatusCode},
     response::IntoResponse,
     routing::{any, get, post},
 };
 use rust_embed::Embed;
 use serde_json::json;
-use std::{collections::HashMap, env, ffi::OsStr};
+use std::{collections::HashMap, env, ffi::OsStr, sync::Arc, time::Duration};
+use tokio::{
+    sync::{
+        Mutex,
+        watch::{self, Sender},
+    },
+    time::sleep,
+};
 use tower_http::cors::{Any, CorsLayer};
 
 const HOST: &str = "127.0.0.1:2479";
@@ -142,17 +149,21 @@ async fn cleanup() -> impl IntoResponse {
     clear_temp_dir();
 }
 
-async fn ws_handler(ws: WebSocketUpgrade) -> impl IntoResponse {
-    ws.on_upgrade(handle_socket)
-}
-async fn handle_socket(mut socket: WebSocket) {
-    println!("socket connected");
-    while socket.recv().await.is_some() {}
-    println!("socket disconnected");
-    clear_temp_dir();
+async fn ws_handler(ws: WebSocketUpgrade, State(state): State<AppState>) -> impl IntoResponse {
+    ws.on_upgrade(|ws| handle_socket(ws, state))
 }
 
-fn create_app() -> Router {
+async fn handle_socket(mut socket: WebSocket, state: AppState) {
+    *state.connected.lock().await = true;
+
+    while socket.recv().await.is_some() {}
+
+    *state.connected.lock().await = false;
+    clear_temp_dir();
+    schedule_shutdown(&state).await;
+}
+
+fn create_app(state: AppState) -> Router {
     let cors = CorsLayer::new()
         .allow_origin(Any)
         .allow_methods(Any)
@@ -169,6 +180,32 @@ fn create_app() -> Router {
         .route("/{*path}", get(get_asset))
         .layer(cors)
         .layer(DefaultBodyLimit::max(1 * 1024 * 1024 * 1024)) // 1GB
+        .with_state(state)
+}
+
+async fn schedule_shutdown(state: &AppState) {
+    let tx = state.shutdown_channel.clone();
+    let connected = state.connected.clone();
+
+    tokio::spawn({
+        async move {
+            sleep(Duration::from_secs(2)).await;
+
+            let test = *connected.lock().await;
+            if !test {
+                println!("sending shutdown signal...");
+                let _ = tx.send(true);
+            } else {
+                println!("refused to shutdown");
+            }
+        }
+    });
+}
+
+#[derive(Clone)]
+struct AppState {
+    shutdown_channel: Sender<bool>,
+    connected: Arc<Mutex<bool>>,
 }
 
 #[derive(Embed)]
@@ -178,7 +215,12 @@ struct Asset;
 #[tokio::main]
 async fn main() {
     let is_debug = env::var("DEBUG").unwrap_or_default() == "true";
-    let app = create_app();
+    let state = AppState {
+        shutdown_channel: watch::channel(false).0,
+        connected: Arc::new(Mutex::new(false)),
+    };
+    let shutdown_rx = state.shutdown_channel.subscribe();
+    let app = create_app(state);
 
     let listener = tokio::net::TcpListener::bind(HOST)
         .await
@@ -194,19 +236,41 @@ async fn main() {
     }
 
     axum::serve(listener, app)
+        .with_graceful_shutdown(shutdown_signal(shutdown_rx))
         .await
         .expect("failed to start server");
+
+    println!("Server shutdown")
+}
+
+async fn shutdown_signal(mut rx: watch::Receiver<bool>) {
+    loop {
+        if *rx.borrow() {
+            break;
+        }
+
+        if rx.changed().await.is_err() {
+            break;
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::utils::response_body_str;
-
     use super::*;
+    use crate::utils::response_body_str;
     use axum::{body::Body, http::Request};
     use serde_json::Value;
     use std::fs;
     use tower::ServiceExt;
+
+    fn mock_app() -> Router {
+        let state = AppState {
+            shutdown_channel: watch::channel(false).0,
+            connected: Arc::new(Mutex::new(true)),
+        };
+        return create_app(state);
+    }
 
     #[tokio::test]
     async fn cleanup() {
@@ -216,7 +280,7 @@ mod tests {
             .body(Body::empty())
             .unwrap();
 
-        let response = create_app().oneshot(request).await.unwrap();
+        let response = mock_app().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK)
     }
 
@@ -228,7 +292,7 @@ mod tests {
             .body(Body::empty())
             .unwrap();
 
-        let response = create_app().oneshot(request).await.unwrap();
+        let response = mock_app().oneshot(request).await.unwrap();
         let str = response_body_str(response.into_body()).await;
         let json: Value = serde_json::from_slice(str.as_bytes()).unwrap();
         assert_eq!(json["ffmpegAvailable"], true)
@@ -243,7 +307,7 @@ mod tests {
             .body(Body::empty())
             .unwrap();
 
-        create_app().oneshot(request).await.unwrap();
+        mock_app().oneshot(request).await.unwrap();
     }
 
     mod upload {
@@ -258,7 +322,7 @@ mod tests {
                 .body(Body::from(fs::read("local/sample.flac").unwrap()))
                 .unwrap();
 
-            let response = create_app().oneshot(request).await.unwrap();
+            let response = mock_app().oneshot(request).await.unwrap();
             assert_eq!(response.status(), StatusCode::OK);
             assert!(get_temp_dir().join("test").exists())
         }
@@ -272,7 +336,7 @@ mod tests {
                 .body(Body::empty())
                 .unwrap();
 
-            let response = create_app().oneshot(request).await.unwrap();
+            let response = mock_app().oneshot(request).await.unwrap();
             assert_eq!(response.status(), StatusCode::BAD_REQUEST);
         }
     }
@@ -289,7 +353,7 @@ mod tests {
                     .header("content-type", "application/octet-stream")
                     .body(Body::from(fs::read("local/sample.flac").unwrap()))
                     .unwrap();
-                create_app().oneshot(request).await.unwrap();
+                mock_app().oneshot(request).await.unwrap();
             }
             {
                 let request = Request::builder()
@@ -297,7 +361,7 @@ mod tests {
                     .uri("/api/convert?name=sample.flac")
                     .body(Body::empty())
                     .unwrap();
-                let response = create_app().oneshot(request).await.unwrap();
+                let response = mock_app().oneshot(request).await.unwrap();
                 assert_eq!(response.status(), StatusCode::OK);
             }
         }
@@ -309,7 +373,7 @@ mod tests {
                 .uri("/api/convert?name=non_existent.flac")
                 .body(Body::empty())
                 .unwrap();
-            let response = create_app().oneshot(request).await.unwrap();
+            let response = mock_app().oneshot(request).await.unwrap();
             assert_eq!(response.status(), StatusCode::BAD_REQUEST);
         }
     }
