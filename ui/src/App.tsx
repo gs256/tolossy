@@ -86,16 +86,6 @@ export function App() {
 
   return (
     <div className="h-screen flex flex-col items-center justify-center">
-      {/*{!hasProcessingFiles ? <FileSelection /> : <ProcessingList />}
-      {!hasProcessingFiles ? (
-        <Button onClick={startConversion}>Convert to mp3</Button>
-      ) : (
-        <>
-          {hasFailed && <button onClick={retryFailed}>Retry failed</button>}
-          <button onClick={startOver}>Back</button>
-          <button onClick={showOutput}>Show output</button>
-        </>
-      )}*/}
       <Card className="min-w-lg">
         <CardHeader>
           <CardTitle>tolossy</CardTitle>
@@ -109,8 +99,9 @@ export function App() {
         </CardHeader>
         <CardContent>
           {!hasProcessingFiles ? <FileSelection /> : <ProcessingList />}
+          <p className="pt-3">Output directory: /path/TODO</p>
         </CardContent>
-        <CardFooter>
+        <CardFooter className="gap-2">
           {!hasProcessingFiles ? (
             <Button onClick={startConversion}>Convert to mp3</Button>
           ) : (
