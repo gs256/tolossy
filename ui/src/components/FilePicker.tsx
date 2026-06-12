@@ -1,5 +1,5 @@
+import { cn } from "@/lib/utils";
 import { FilePlusCorner } from "lucide-react";
-import { cn } from "./lib/utils";
 
 export function FilePicker(props: { onFileSelected: (files: File[]) => void }) {
   function fileSelected(e: React.ChangeEvent) {

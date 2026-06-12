@@ -1,14 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import "./App.css";
-import { FileSelection } from "./file-selection/FileSelection";
-import { useFileSelectionStore } from "./file-selection/useFileSelectionStore";
-import { ProcessingList } from "./processing-list/ProcessingList";
-import { useProcessingStore } from "./processing-list/useProcessingStore";
-import type { AppState } from "./common/types";
 import { useRef } from "react";
-import { CoreApi } from "./common/core-api";
-import { useCoreWs } from "./common/useCoreWs";
-import { CORE_URL } from "./common/const";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -17,10 +8,18 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "./components/ui/card";
+} from "@/components/ui/card";
 import { DisconnectedScreen } from "./DisconnectedScreen";
 import { LoadingScreen } from "./LoadingScreen";
 import { SetupNeededScreen } from "./SetupNeededScreen";
+import { FileSelection } from "@/features/file-selection/FileSelection";
+import { useFileSelectionStore } from "@/features/file-selection/useFileSelectionStore";
+import { ProcessingList } from "@/features/file-processing/ProcessingList";
+import { useProcessingStore } from "@/features/file-processing/useProcessingStore";
+import { useCoreWs } from "@/hooks/useCoreWs";
+import { CORE_URL } from "@/lib/const";
+import { CoreApi } from "@/lib/core-api";
+import type { AppState } from "@/types/app";
 
 export function App() {
   const { status: connectionStatus } = useCoreWs();

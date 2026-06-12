@@ -1,6 +1,4 @@
 import { useState } from "react";
-import { useProcessingStore, type ProcessingItem } from "./useProcessingStore";
-import { ErrorModal } from "../error-modal/ErrorModal";
 import {
   Item,
   ItemActions,
@@ -14,6 +12,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Spinner } from "@/components/ui/spinner";
+import { ErrorModal } from "@/components/ErrorModal";
+import type { ProcessingItem } from "@/types/processing";
+import { useProcessingStore } from "./useProcessingStore";
 
 export function ProcessingList() {
   const { items } = useProcessingStore();

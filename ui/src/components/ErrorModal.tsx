@@ -1,5 +1,4 @@
 import { useEffect, useRef } from "react";
-import type { ProcessingItem } from "../processing-list/useProcessingStore";
 import {
   Dialog,
   DialogContent,
@@ -7,6 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import type { ProcessingItem } from "@/types/processing";
 
 export function ErrorModal(props: {
   open: boolean;

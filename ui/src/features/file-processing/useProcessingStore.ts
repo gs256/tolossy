@@ -1,15 +1,6 @@
+import { CoreApi } from "@/lib/core-api";
+import type { ProcessingFilter, ProcessingItem } from "@/types/processing";
 import { create } from "zustand";
-import { CoreApi } from "../common/core-api";
-
-export type ProcessingItemStatus = "processing" | "error" | "done" | "waiting";
-export type ProcessingFilter = "all" | "failed";
-
-export interface ProcessingItem {
-  file: File;
-  name: string;
-  status: ProcessingItemStatus;
-  logs: string;
-}
 
 export interface ProcessingStore {
   items: ProcessingItem[];

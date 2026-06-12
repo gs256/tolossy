@@ -1,4 +1,4 @@
-import { FilePicker } from "@/FilePicker";
+import { FilePicker } from "@/components/FilePicker";
 import { SelectedFilesList } from "./SelectedFilesList";
 import { useFileSelectionStore } from "./useFileSelectionStore";
 

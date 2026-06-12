@@ -1,5 +1,5 @@
+import { CORE_URL } from "@/lib/const";
 import { useEffect, useRef, useState } from "react";
-import { CORE_URL } from "./const";
 
 export function useCoreWs() {
   const [status, setStatus] = useState<
