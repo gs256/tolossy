@@ -20,6 +20,7 @@ import {
 } from "./components/ui/card";
 import { DisconnectedScreen } from "./DisconnectedScreen";
 import { LoadingScreen } from "./LoadingScreen";
+import { SetupNeededScreen } from "./SetupNeededScreen";
 
 export function App() {
   const { status: connectionStatus } = useCoreWs();
@@ -66,8 +67,10 @@ export function App() {
     api.current.openOutputDir();
   }
 
-  if (connectionStatus === "pending") {
+  if (connectionStatus === "pending" || !appState) {
     return <LoadingScreen />;
+  } else if (!appState.ffmpegAvailable) {
+    return <SetupNeededScreen />;
   } else if (connectionStatus === "disconnected") {
     return <DisconnectedScreen />;
   }
