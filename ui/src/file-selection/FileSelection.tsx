@@ -1,13 +1,11 @@
+import { FilePicker } from "@/FilePicker";
 import { SelectedFilesList } from "./SelectedFilesList";
 import { useFileSelectionStore } from "./useFileSelectionStore";
 
 export function FileSelection() {
   const { files, setFiles, removeFile } = useFileSelectionStore();
 
-  function fileSelected(e: React.ChangeEvent) {
-    const target = e.target as HTMLInputElement;
-    const addedFiles = Array.from(target.files ?? []);
-
+  function fileSelected(addedFiles: File[]) {
     if (addedFiles.length > 0) {
       const newFiles = [...files];
       for (const added of addedFiles) {
@@ -21,22 +19,14 @@ export function FileSelection() {
       }
       setFiles(newFiles);
     }
-
-    target.files = null;
-    target.value = "";
   }
 
   return (
-    <>
-      <SelectedFilesList files={files} onRemove={removeFile} />
-      <div>
-        <input
-          type="file"
-          multiple
-          style={{ border: "1px solid red", padding: "20px" }}
-          onChange={fileSelected}
-        />
-      </div>
-    </>
+    <div className="flex flex-col gap-4">
+      {files.length > 0 && (
+        <SelectedFilesList files={files} onRemove={removeFile} />
+      )}
+      <FilePicker onFileSelected={fileSelected} />
+    </div>
   );
 }
