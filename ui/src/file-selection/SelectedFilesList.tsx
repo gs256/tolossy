@@ -2,9 +2,10 @@ import {
   Item,
   ItemActions,
   ItemContent,
+  ItemMedia,
   ItemTitle,
 } from "@/components/ui/item";
-import { X } from "lucide-react";
+import { Music, X } from "lucide-react";
 
 export function SelectedFilesList(props: {
   files: File[];
@@ -16,6 +17,9 @@ export function SelectedFilesList(props: {
     <div className="flex flex-col gap-2">
       {files.map((file, i) => (
         <Item variant="outline" size="sm" key={i}>
+          <ItemMedia variant="icon">
+            <Music />
+          </ItemMedia>
           <ItemContent>
             <ItemTitle>{file.name}</ItemTitle>
           </ItemContent>

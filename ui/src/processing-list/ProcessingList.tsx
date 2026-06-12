@@ -57,7 +57,9 @@ export function ProcessingList() {
                 </span>
                 {canViewLogs(item) && (
                   <Badge
-                    variant="outline"
+                    variant={
+                      item.status === "error" ? "destructive" : "outline"
+                    }
                     onClick={() => showLogs(item)}
                     className="select-none cursor-pointer"
                   >
