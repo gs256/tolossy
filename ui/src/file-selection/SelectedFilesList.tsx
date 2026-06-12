@@ -1,3 +1,11 @@
+import {
+  Item,
+  ItemActions,
+  ItemContent,
+  ItemTitle,
+} from "@/components/ui/item";
+import { X } from "lucide-react";
+
 export function SelectedFilesList(props: {
   files: File[];
   onRemove: (name: string) => void;
@@ -5,19 +13,19 @@ export function SelectedFilesList(props: {
   const { files, onRemove } = props;
 
   return (
-    <div>
+    <div className="flex flex-col gap-2">
       {files.map((file, i) => (
-        <div
-          key={i}
-          style={{
-            display: "flex",
-            width: "280px",
-            justifyContent: "space-between",
-          }}
-        >
-          <span>{file.name}</span>
-          <button onClick={() => onRemove(file.name)}>x</button>
-        </div>
+        <Item variant="outline" size="sm" key={i}>
+          <ItemContent>
+            <ItemTitle>{file.name}</ItemTitle>
+          </ItemContent>
+          <ItemActions>
+            <X
+              className="size-4 cursor-pointer"
+              onClick={() => onRemove(file.name)}
+            />
+          </ItemActions>
+        </Item>
       ))}
     </div>
   );
