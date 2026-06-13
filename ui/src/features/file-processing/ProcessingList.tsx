@@ -14,6 +14,11 @@ import { Spinner } from "@/components/ui/spinner";
 import { ErrorModal } from "@/components/ErrorModal";
 import type { ProcessingItem } from "@/types/processing";
 import { useProcessingStore } from "./useProcessingStore";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export function ProcessingList() {
   const { items } = useProcessingStore();
@@ -59,17 +64,24 @@ export function ProcessingList() {
             </ItemContent>
             <ItemActions>
               {canViewLogs(item) && (
-                <Button
-                  size="icon"
-                  variant="secondary"
-                  onClick={() => showLogs(item)}
-                >
-                  {item.status === "error" ? (
-                    <ListX className="text-red-400" />
-                  ) : (
-                    <TextAlignStart className="text-muted-foreground" />
-                  )}
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="icon"
+                      variant="secondary"
+                      onClick={() => showLogs(item)}
+                    >
+                      {item.status === "error" ? (
+                        <ListX className="text-red-400" />
+                      ) : (
+                        <TextAlignStart className="text-muted-foreground" />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>View logs</p>
+                  </TooltipContent>
+                </Tooltip>
               )}
             </ItemActions>
           </Item>

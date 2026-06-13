@@ -31,6 +31,11 @@ export function App() {
     items: processingItems,
     clear: clearProcessing,
   } = useProcessingStore();
+  const isProcessing = useProcessingStore((state) =>
+    state.items.some(
+      (item) => item.status === "processing" || item.status === "waiting",
+    ),
+  );
   const api = useRef(new CoreApi());
 
   const { data: appState, isPending } = useQuery({
@@ -106,7 +111,11 @@ export function App() {
           ) : (
             <>
               {hasFailed && <Button onClick={retryFailed}>Retry failed</Button>}
-              <Button onClick={startOver} variant="outline">
+              <Button
+                onClick={startOver}
+                variant="outline"
+                disabled={isProcessing}
+              >
                 Back
               </Button>
               <Button onClick={showOutput} variant="outline">
