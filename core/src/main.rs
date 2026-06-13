@@ -150,6 +150,11 @@ async fn cleanup() -> impl IntoResponse {
     clear_temp_dir();
 }
 
+async fn shutdown_handler(State(state): State<AppState>) -> impl IntoResponse {
+    clear_temp_dir();
+    _ = state.shutdown_channel.send(true);
+}
+
 async fn ws_handler(ws: WebSocketUpgrade, State(state): State<AppState>) -> impl IntoResponse {
     ws.on_upgrade(|ws| handle_socket(ws, state))
 }
@@ -177,6 +182,7 @@ fn create_app(state: AppState) -> Router {
         .route("/api/convert", get(convert))
         .route("/api/open-output-dir", get(open_output_dir))
         .route("/api/cleanup", get(cleanup))
+        .route("/api/shutdown", get(shutdown_handler))
         .route("/ws", any(ws_handler))
         .route("/{*path}", get(get_asset))
         .layer(cors)
@@ -194,10 +200,7 @@ async fn schedule_shutdown(state: &AppState) {
 
             let test = *connected.lock().await;
             if !test {
-                println!("sending shutdown signal...");
                 let _ = tx.send(true);
-            } else {
-                println!("refused to shutdown");
             }
         }
     });

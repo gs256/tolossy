@@ -36,6 +36,10 @@ export class CoreApi {
     return await fetch(`${this.url}/api/cleanup`, { keepalive: true });
   }
 
+  public async shutdown() {
+    return await fetch(`${this.url}/api/shutdown`, { keepalive: true });
+  }
+
   private async upload(file: File) {
     return await fetch(`${this.url}/api/upload?name=${file.name}`, {
       method: "POST",

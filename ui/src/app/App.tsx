@@ -72,6 +72,11 @@ export function App() {
     api.current.openOutputDir();
   }
 
+  async function quit() {
+    await api.current.shutdown();
+    window.close();
+  }
+
   if (connectionStatus === "pending" || !appState || isPending) {
     return <LoadingScreen />;
   } else if (!appState?.ffmpegAvailable) {
@@ -81,7 +86,7 @@ export function App() {
   }
 
   return (
-    <div className="h-screen flex flex-col items-center justify-center">
+    <div className="h-screen flex flex-col items-center justify-center gap-2">
       <Card className="min-w-md">
         <CardHeader>
           <CardTitle>tolossy</CardTitle>
@@ -125,6 +130,9 @@ export function App() {
               </Button>
             </>
           )}
+          <Button variant="destructive" onClick={quit}>
+            Quit
+          </Button>
         </CardFooter>
       </Card>
     </div>

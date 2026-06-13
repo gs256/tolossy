@@ -20,7 +20,7 @@ export function DisconnectedScreen() {
             Refresh page
           </Button>
           <Button onClick={exit} variant="destructive">
-            Exit
+            Quit
           </Button>
         </div>
       </div>
