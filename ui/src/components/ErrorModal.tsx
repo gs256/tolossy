@@ -7,6 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { ProcessingItem } from "@/types/processing";
+import { ScrollableArea } from "./ScrollableArea";
 
 export function ErrorModal(props: {
   open: boolean;
@@ -33,11 +34,11 @@ export function ErrorModal(props: {
           <DialogTitle>Conversion logs</DialogTitle>
           <DialogDescription>{item.name}</DialogDescription>
         </DialogHeader>
-        <div className="-mx-4 scrollbar-thin scrollbar-thumb-accent max-h-[50vh] overflow-y-auto px-4">
+        <ScrollableArea className="max-h-[50vh]">
           <pre>
             <code style={{ textWrap: "wrap" }}>{item.logs}</code>
           </pre>
-        </div>
+        </ScrollableArea>
       </DialogContent>
     </Dialog>
   );

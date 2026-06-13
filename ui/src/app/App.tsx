@@ -22,6 +22,7 @@ import { CoreApi } from "@/lib/core-api";
 import type { AppState } from "@/types/app";
 import { truncatePath } from "@/lib/utils";
 import { PageWrapper } from "@/components/PageWrapper";
+import { ScrollableArea } from "@/components/ScrollableArea";
 
 export function App() {
   const { status: connectionStatus } = useCoreWs();
@@ -107,9 +108,9 @@ export function App() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="-mx-4 scrollbar-thin scrollbar-thumb-accent max-h-[70vh] overflow-y-auto px-4">
+          <ScrollableArea className="max-h-[70vh]">
             {!hasProcessingFiles ? <FileSelection /> : <ProcessingList />}
-          </div>
+          </ScrollableArea>
         </CardContent>
         <CardFooter className="gap-2">
           {!hasProcessingFiles ? (
