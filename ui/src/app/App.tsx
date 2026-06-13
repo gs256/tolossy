@@ -17,40 +17,29 @@ import { useFileSelectionStore } from "@/features/file-selection/useFileSelectio
 import { ProcessingList } from "@/features/file-processing/ProcessingList";
 import { useProcessingStore } from "@/features/file-processing/useProcessingStore";
 import { useCoreWs } from "@/hooks/useCoreWs";
-import { CORE_URL } from "@/lib/const";
 import { CoreApi } from "@/lib/core-api";
-import type { AppState } from "@/types/app";
 import { truncatePath } from "@/lib/utils";
 import { PageWrapper } from "@/components/PageWrapper";
 import { ScrollableArea } from "@/components/ScrollableArea";
+import { createAppStateQuery } from "@/lib/queries";
+import { useProcessingStoreComputed } from "@/features/file-processing/useProcessingStoreComputed";
+import type { AppState } from "@/types/app";
 
 export function App() {
   const { status: connectionStatus } = useCoreWs();
   const { files, clear: clearFileSelection } = useFileSelectionStore();
+  const api = useRef(new CoreApi());
+  const { data: appState, isPending } = useQuery(createAppStateQuery());
+  const { isProcessing, someFailed } = useProcessingStoreComputed();
   const {
     enqueue,
     process,
     items: processingItems,
     clear: clearProcessing,
   } = useProcessingStore();
-  const isProcessing = useProcessingStore((state) =>
-    state.items.some(
-      (item) => item.status === "processing" || item.status === "waiting",
-    ),
-  );
-  const api = useRef(new CoreApi());
-
-  const { data: appState, isPending } = useQuery({
-    queryKey: ["ffmpeg-available"],
-    queryFn: async (): Promise<AppState> => {
-      const response = await fetch(`${CORE_URL}/api/state`);
-      return response.json();
-    },
-  });
 
   const hasSelectedFiles = files.length > 0;
   const hasProcessingFiles = processingItems.length > 0;
-  const hasFailed = processingItems.some((item) => item.status === "error");
 
   function startConversion() {
     if (!hasSelectedFiles) {
@@ -94,17 +83,7 @@ export function App() {
           <CardTitle>tolossy</CardTitle>
           <CardDescription>
             <p>Convert any audio file to .mp3</p>
-            <p>
-              Output path:
-              <Button
-                variant="link"
-                className="px-1"
-                size="sm"
-                onClick={showOutput}
-              >
-                {truncatePath(appState?.outputPath)}
-              </Button>
-            </p>
+            <OutputPath reveal={showOutput} appState={appState} />
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -119,7 +98,9 @@ export function App() {
             </Button>
           ) : (
             <>
-              {hasFailed && <Button onClick={retryFailed}>Retry failed</Button>}
+              {someFailed && (
+                <Button onClick={retryFailed}>Retry failed</Button>
+              )}
               <Button
                 onClick={startOver}
                 variant="outline"
@@ -138,5 +119,16 @@ export function App() {
         </CardFooter>
       </Card>
     </PageWrapper>
+  );
+}
+
+function OutputPath(props: { reveal: () => void; appState: AppState }) {
+  return (
+    <p>
+      Output path:
+      <Button variant="link" className="px-1" size="sm" onClick={props.reveal}>
+        {truncatePath(props.appState.outputPath)}
+      </Button>
+    </p>
   );
 }
