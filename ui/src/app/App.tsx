@@ -21,6 +21,7 @@ import { CORE_URL } from "@/lib/const";
 import { CoreApi } from "@/lib/core-api";
 import type { AppState } from "@/types/app";
 import { truncatePath } from "@/lib/utils";
+import { PageWrapper } from "@/components/PageWrapper";
 
 export function App() {
   const { status: connectionStatus } = useCoreWs();
@@ -86,7 +87,7 @@ export function App() {
   }
 
   return (
-    <div className="h-screen flex flex-col items-center justify-center gap-2">
+    <PageWrapper>
       <Card className="min-w-md">
         <CardHeader>
           <CardTitle>tolossy</CardTitle>
@@ -135,6 +136,6 @@ export function App() {
           </Button>
         </CardFooter>
       </Card>
-    </div>
+    </PageWrapper>
   );
 }

@@ -1,3 +1,4 @@
+import { PageWrapper } from "@/components/PageWrapper";
 import { Button } from "../components/ui/button";
 
 export function DisconnectedScreen() {
@@ -10,7 +11,7 @@ export function DisconnectedScreen() {
   }
 
   return (
-    <div className="h-screen flex items-center justify-center">
+    <PageWrapper>
       <div className="flex flex-col gap-2 items-center">
         <div className="text-sm text-muted-foreground">
           Disconnected. Try refreshing the page.
@@ -24,6 +25,6 @@ export function DisconnectedScreen() {
           </Button>
         </div>
       </div>
-    </div>
+    </PageWrapper>
   );
 }

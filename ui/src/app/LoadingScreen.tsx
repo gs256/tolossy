@@ -1,9 +1,10 @@
+import { PageWrapper } from "@/components/PageWrapper";
 import { Spinner } from "@/components/ui/spinner";
 
 export function LoadingScreen() {
   return (
-    <div className="h-screen flex items-center justify-center">
+    <PageWrapper>
       <Spinner className="size-8" />
-    </div>
+    </PageWrapper>
   );
 }

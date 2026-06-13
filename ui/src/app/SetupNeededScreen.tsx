@@ -1,6 +1,8 @@
+import { PageWrapper } from "@/components/PageWrapper";
+
 export function SetupNeededScreen() {
   return (
-    <div className="h-screen flex items-center justify-center">
+    <PageWrapper>
       <div className="flex flex-col gap-2 items-center">
         <p className="text-sm text-muted-foreground text-center">
           Looks like <span className="font-mono text-foreground">ffmpeg</span>{" "}
@@ -9,6 +11,6 @@ export function SetupNeededScreen() {
           Please, install it and restart the app.
         </p>
       </div>
-    </div>
+    </PageWrapper>
   );
 }
