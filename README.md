@@ -9,9 +9,11 @@
 
 A native desktop app with Web UI that converts any audio format to MP3 using `FFmpeg`.
 
-**Supported input formats:** `wav`, `flac`, `aac`, `ogg`, `opus`, `aiff`, `m4a`, `alac` and other formats that FFmpeg supports
+**Supported input formats:** `wav`, `flac`, `aac`, `ogg`, `opus`, `aiff`, `m4a`, `alac` and other formats that FFmpeg supports.
 
 **Supported output formats:** `mp3`
+
+**Encoding preset:** `VBR V0` for best possible quality.
 
 ![usage](https://github.com/user-attachments/assets/a19cfa4f-416a-4c47-b6b0-54b66605fb11)
 
