@@ -17,6 +17,9 @@ export function useCoreWs() {
     ws.onclose = () => {
       setStatus("disconnected");
     };
+    ws.onerror = () => {
+      setStatus("disconnected");
+    };
 
     return () => {
       ws.close();

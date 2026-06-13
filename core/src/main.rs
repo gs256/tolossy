@@ -135,6 +135,7 @@ async fn get_state() -> impl IntoResponse {
     let ffmpeg_available = is_ffmpeg_available();
     Json(json!({
         "ffmpegAvailable": ffmpeg_available,
+        "outputPath": get_default_output_dir(),
     }))
 }
 

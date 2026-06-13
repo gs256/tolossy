@@ -7,8 +7,7 @@ import {
   ItemMedia,
   ItemTitle,
 } from "@/components/ui/item";
-import { Check, ChevronRightIcon, CircleX, Clock4 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Check, CircleX, Clock4, ListX, TextAlignStart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Spinner } from "@/components/ui/spinner";
@@ -56,23 +55,22 @@ export function ProcessingList() {
                     {item.status}
                   </span>
                 </span>
-                {canViewLogs(item) && (
-                  <Badge
-                    variant={
-                      item.status === "error" ? "destructive" : "outline"
-                    }
-                    onClick={() => showLogs(item)}
-                    className="select-none cursor-pointer"
-                  >
-                    View logs
-                  </Badge>
-                )}
               </ItemDescription>
             </ItemContent>
             <ItemActions>
-              <Button size="icon" variant="ghost">
-                <ChevronRightIcon />
-              </Button>
+              {canViewLogs(item) && (
+                <Button
+                  size="icon"
+                  variant="secondary"
+                  onClick={() => showLogs(item)}
+                >
+                  {item.status === "error" ? (
+                    <ListX className="text-red-400" />
+                  ) : (
+                    <TextAlignStart className="text-muted-foreground" />
+                  )}
+                </Button>
+              )}
             </ItemActions>
           </Item>
         ))}

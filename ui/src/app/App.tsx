@@ -20,6 +20,7 @@ import { useCoreWs } from "@/hooks/useCoreWs";
 import { CORE_URL } from "@/lib/const";
 import { CoreApi } from "@/lib/core-api";
 import type { AppState } from "@/types/app";
+import { truncatePath } from "@/lib/utils";
 
 export function App() {
   const { status: connectionStatus } = useCoreWs();
@@ -68,7 +69,7 @@ export function App() {
 
   if (connectionStatus === "pending" || !appState || isPending) {
     return <LoadingScreen />;
-  } else if (!appState.ffmpegAvailable) {
+  } else if (!appState?.ffmpegAvailable) {
     return <SetupNeededScreen />;
   } else if (connectionStatus === "disconnected") {
     return <DisconnectedScreen />;
@@ -79,13 +80,23 @@ export function App() {
       <Card className="min-w-md">
         <CardHeader>
           <CardTitle>tolossy</CardTitle>
-          <CardDescription>Convert any audio file to .mp3</CardDescription>
+          <CardDescription>
+            <p>Convert any audio file to .mp3</p>
+            <p>
+              Output path:
+              <Button
+                variant="link"
+                className="px-1"
+                size="sm"
+                onClick={showOutput}
+              >
+                {truncatePath(appState?.outputPath)}
+              </Button>
+            </p>
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {!hasProcessingFiles ? <FileSelection /> : <ProcessingList />}
-          <p className="pt-3 text-muted-foreground text-sm">
-            Output directory: /path/TODO
-          </p>
         </CardContent>
         <CardFooter className="gap-2">
           {!hasProcessingFiles ? (
@@ -98,7 +109,7 @@ export function App() {
               <Button onClick={startOver} variant="outline">
                 Back
               </Button>
-              <Button onClick={showOutput} variant="secondary">
+              <Button onClick={showOutput} variant="outline">
                 Show output
               </Button>
             </>
