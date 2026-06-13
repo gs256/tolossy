@@ -13,6 +13,8 @@ A native desktop app with Web UI that converts any audio format to MP3 using `FF
 
 **Supported output formats:** `mp3`
 
+![usage](https://github.com/user-attachments/assets/a19cfa4f-416a-4c47-b6b0-54b66605fb11)
+
 ## Download
 
 Download the executable for your operating system from the [latest release](https://github.com/gs256/tolossy/releases/latest).
