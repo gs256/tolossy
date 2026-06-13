@@ -101,7 +101,9 @@ export function App() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {!hasProcessingFiles ? <FileSelection /> : <ProcessingList />}
+          <div className="-mx-4 scrollbar-thin scrollbar-thumb-accent max-h-[70vh] overflow-y-auto px-4">
+            {!hasProcessingFiles ? <FileSelection /> : <ProcessingList />}
+          </div>
         </CardContent>
         <CardFooter className="gap-2">
           {!hasProcessingFiles ? (
