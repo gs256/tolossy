@@ -2,7 +2,6 @@
 
 ![release](https://img.shields.io/github/v/release/gs256/tolossy)
 ![license](https://img.shields.io/badge/license-MIT-green)
-
 ![rust](https://img.shields.io/badge/rust-%23000000.svg?logo=rust&logoColor=white&bg=red)
 ![vite](https://img.shields.io/badge/vite-%23646CFF.svg?logo=vite&logoColor=white)
 ![react](https://img.shields.io/badge/react-%2320232a.svg?logo=react&logoColor=%2361DAFB)
@@ -10,23 +9,15 @@
 
 A native desktop app with Web UI that converts any audio format to MP3 using `FFmpeg`.
 
-**Supported input formats:**
+**Supported input formats:** `wav`, `flac`, `aac`, `ogg`, `opus`, `aiff`, `m4a`, `alac` and other formats that FFmpeg supports
 
-`wav`, `flac`, `aac`, `ogg`, `opus`, `aiff`, `wma`, `m4a`, `mp3`, `mp4`, `ac3`, `alac` etc.
-(FFmpeg can work with almost any format)
-
-**Supported output formats:**
-
-`mp3`
-
-## Requirements
-
-- [FFmpeg](https://ffmpeg.org/download.html)
-- Web browser
+**Supported output formats:** `mp3`
 
 ## Download
 
 Download the executable for your operating system from the [latest release](https://github.com/gs256/tolossy/releases/latest).
+
+**Note:** this app requires [FFmpeg](https://ffmpeg.org/download.html) to be installed on your system.
 
 ## Usage
 
