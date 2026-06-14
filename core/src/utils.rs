@@ -43,7 +43,7 @@ pub fn cancel_shutdown(state: &AppState) {
     }
 }
 
-pub fn infer_content_type(path: &str) -> String {
+pub fn infer_mime_type(path: &str) -> Option<String> {
     let split = path.split(".");
     if split.count() > 1 {
         let extension = std::path::Path::new(path)
@@ -51,33 +51,31 @@ pub fn infer_content_type(path: &str) -> String {
             .and_then(OsStr::to_str);
         if let Some(test) = extension {
             match test {
-                "html" => return "text/html".to_string(),
-                "js" => return "text/javascript".to_string(),
-                "css" => return "text/css".to_string(),
-                "svg" => return "image/svg+xml".to_string(),
-                "woff2" => return "font/woff2".to_string(),
-                _ => "text/plain".to_string(),
+                "html" => return Some("text/html".to_string()),
+                "js" => return Some("text/javascript".to_string()),
+                "css" => return Some("text/css".to_string()),
+                "svg" => return Some("image/svg+xml".to_string()),
+                "woff2" => return Some("font/woff2".to_string()),
+                _ => return None,
             };
         }
     }
-    "text/plain".to_string()
+    None
 }
 
-pub fn is_binary(path: &str) -> bool {
+pub fn is_binary(path: &str) -> Option<bool> {
     let extension = std::path::Path::new(path)
         .extension()
         .and_then(OsStr::to_str);
     if let Some(test) = extension {
         match test {
-            "woff2" => return true,
-            "woff" => return true,
-            "ttf" => return true,
-            "otf" => return true,
-            "png" => return true,
-            "jpg" => return true,
-            "jpeg" => return true,
-            _ => return false,
+            "woff2" => return Some(true),
+            "html" => return Some(false),
+            "js" => return Some(false),
+            "css" => return Some(false),
+            "svg" => return Some(false),
+            _ => return None,
         };
     }
-    return false;
+    None
 }

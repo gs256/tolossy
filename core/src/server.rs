@@ -1,7 +1,7 @@
 use crate::common::AppState;
 use crate::conversion::clear_temp_dir;
 use crate::conversion::{convert_file, get_default_output_dir, get_temp_dir, is_ffmpeg_available};
-use crate::utils::{cancel_shutdown, infer_content_type, is_binary, schedule_shutdown};
+use crate::utils::{cancel_shutdown, infer_mime_type, is_binary, schedule_shutdown};
 use axum::body::{Body, Bytes};
 use axum::extract::{DefaultBodyLimit, Path, Query, State, WebSocketUpgrade};
 use axum::http::{HeaderValue, Response, StatusCode};
@@ -36,16 +36,21 @@ async fn asset_handler(Path(path): Path<String>) -> impl IntoResponse {
 fn get_file(path: &str) -> Option<Response<Body>> {
     match Asset::get(path) {
         Some(file) => {
-            let mut response = if is_binary(path) {
-                file.data.into_owned().into_response()
-            } else {
-                String::from_utf8(file.data.into_owned())
-                    .expect("failed to read asset")
-                    .into_response()
-            };
+            let mut response =
+                if is_binary(path).unwrap_or_else(|| panic!("failed binary check '{}'", path)) {
+                    file.data.into_owned().into_response()
+                } else {
+                    String::from_utf8(file.data.into_owned())
+                        .expect("failed to read asset")
+                        .into_response()
+                };
             response.headers_mut().insert(
                 "content-type",
-                HeaderValue::from_str(&infer_content_type(path)).unwrap(),
+                HeaderValue::from_str(
+                    &infer_mime_type(path)
+                        .unwrap_or_else(|| panic!("failed to infer MIME type '{}'", path)),
+                )
+                .unwrap(),
             );
             Some(response)
         }
