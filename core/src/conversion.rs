@@ -1,10 +1,7 @@
-use std::{
-    fs::{self, remove_dir_all},
-    path::{Path, PathBuf},
-    process::Command,
-};
-
 use dirs::desktop_dir;
+use std::fs::{self, remove_dir_all};
+use std::path::{Path, PathBuf};
+use std::process::Command;
 
 pub fn is_ffmpeg_available() -> bool {
     let result = Command::new("ffmpeg").arg("--help").output();
