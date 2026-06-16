@@ -34,28 +34,25 @@ async fn asset_handler(Path(path): Path<String>) -> impl IntoResponse {
 }
 
 fn get_file(path: &str) -> Option<Response<Body>> {
-    match Asset::get(path) {
-        Some(file) => {
-            let mut response =
-                if is_binary(path).unwrap_or_else(|| panic!("failed binary check '{}'", path)) {
-                    file.data.into_owned().into_response()
-                } else {
-                    String::from_utf8(file.data.into_owned())
-                        .expect("failed to read asset")
-                        .into_response()
-                };
-            response.headers_mut().insert(
-                "content-type",
-                HeaderValue::from_str(
-                    &infer_mime_type(path)
-                        .unwrap_or_else(|| panic!("failed to infer MIME type '{}'", path)),
-                )
-                .unwrap(),
-            );
-            Some(response)
-        }
-        None => None,
-    }
+    Asset::get(path).map(|file| {
+        let mut response =
+            if is_binary(path).unwrap_or_else(|| panic!("failed binary check '{}'", path)) {
+                file.data.into_owned().into_response()
+            } else {
+                String::from_utf8(file.data.into_owned())
+                    .expect("failed to read asset")
+                    .into_response()
+            };
+        response.headers_mut().insert(
+            "content-type",
+            HeaderValue::from_str(
+                &infer_mime_type(path)
+                    .unwrap_or_else(|| panic!("failed to infer MIME type '{}'", path)),
+            )
+            .unwrap(),
+        );
+        response
+    })
 }
 
 async fn upload_handler(
@@ -151,132 +148,5 @@ pub fn create_app(state: AppState) -> Router {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::utils::response_body_str;
-    use axum::{
-        Router,
-        body::Body,
-        http::{Request, StatusCode},
-    };
-    use serde_json::Value;
-    use std::{fs, sync::Arc, sync::RwLock};
-    use tokio::sync::watch;
-    use tower::ServiceExt;
-
-    fn mock_app() -> Router {
-        let state = AppState {
-            shutdown_channel: watch::channel(false).0,
-            task: Arc::new(RwLock::new(None)),
-        };
-        return create_app(state);
-    }
-
-    #[tokio::test]
-    async fn cleanup() {
-        let request = Request::builder()
-            .method("GET")
-            .uri("/api/cleanup")
-            .body(Body::empty())
-            .unwrap();
-
-        let response = mock_app().oneshot(request).await.unwrap();
-        assert_eq!(response.status(), StatusCode::OK)
-    }
-
-    #[tokio::test]
-    async fn get_state() {
-        let request = Request::builder()
-            .method("GET")
-            .uri("/api/state")
-            .body(Body::empty())
-            .unwrap();
-
-        let response = mock_app().oneshot(request).await.unwrap();
-        let str = response_body_str(response.into_body()).await;
-        let json: Value = serde_json::from_slice(str.as_bytes()).unwrap();
-        assert_eq!(json["ffmpegAvailable"], true)
-    }
-
-    #[tokio::test]
-    #[ignore]
-    async fn open_output_dir() {
-        let request = Request::builder()
-            .method("GET")
-            .uri("/api/open-output-dir")
-            .body(Body::empty())
-            .unwrap();
-
-        mock_app().oneshot(request).await.unwrap();
-    }
-
-    mod upload {
-        use crate::conversion::get_temp_dir;
-
-        use super::*;
-
-        #[tokio::test]
-        async fn upload_success() {
-            let request = Request::builder()
-                .method("POST")
-                .uri("/api/upload?name=test")
-                .header("content-type", "application/octet-stream")
-                .body(Body::from(fs::read("local/sample.flac").unwrap()))
-                .unwrap();
-
-            let response = mock_app().oneshot(request).await.unwrap();
-            assert_eq!(response.status(), StatusCode::OK);
-            assert!(get_temp_dir().join("test").exists())
-        }
-
-        #[tokio::test]
-        async fn upload_no_name() {
-            let request = Request::builder()
-                .method("POST")
-                .uri("/api/upload")
-                .header("content-type", "application/octet-stream")
-                .body(Body::empty())
-                .unwrap();
-
-            let response = mock_app().oneshot(request).await.unwrap();
-            assert_eq!(response.status(), StatusCode::BAD_REQUEST);
-        }
-    }
-
-    mod upload_and_convert {
-        use super::*;
-
-        #[tokio::test]
-        async fn success() {
-            {
-                let request = Request::builder()
-                    .method("POST")
-                    .uri("/api/upload?name=sample.flac")
-                    .header("content-type", "application/octet-stream")
-                    .body(Body::from(fs::read("local/sample.flac").unwrap()))
-                    .unwrap();
-                mock_app().oneshot(request).await.unwrap();
-            }
-            {
-                let request = Request::builder()
-                    .method("GET")
-                    .uri("/api/convert?name=sample.flac")
-                    .body(Body::empty())
-                    .unwrap();
-                let response = mock_app().oneshot(request).await.unwrap();
-                assert_eq!(response.status(), StatusCode::OK);
-            }
-        }
-
-        #[tokio::test]
-        async fn non_existent_file() {
-            let request = Request::builder()
-                .method("GET")
-                .uri("/api/convert?name=non_existent.flac")
-                .body(Body::empty())
-                .unwrap();
-            let response = mock_app().oneshot(request).await.unwrap();
-            assert_eq!(response.status(), StatusCode::BAD_REQUEST);
-        }
-    }
-}
+#[path = "tests/server_tests.rs"]
+mod server_tests;
